@@ -43,4 +43,4 @@ async def test_duplicate_email_registration(client: AsyncClient):
         }
     )
     assert response.status_code == 400
-    assert "Email already registered" in response.json()["detail"]
+    assert "A user with this email is already registered" in response.json()["detail"]

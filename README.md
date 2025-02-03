@@ -20,42 +20,18 @@ ecommerce_api/
 │   │   │       ├── __init__.py
 │   │   │       ├── auth.py
 │   │   │       ├── users.py
-│   │   │       ├── products.py
-│   │   │       ├── categories.py
-│   │   │       ├── orders.py
-│   │   │       ├── cart.py
-│   │   │       └── payments.py
-│   │   └── v2/
-│   │       ├── __init__.py
-│   │       ├── routes.py
-│   │       └── endpoints/
 │   ├── models/
 │   │   ├── __init__.py
 │   │   ├── base.py
 │   │   ├── user.py
-│   │   ├── product.py
-│   │   ├── category.py
-│   │   ├── order.py
-│   │   ├── cart.py
-│   │   └── payment.py
 │   ├── schemas/
 │   │   ├── __init__.py
 │   │   ├── base.py
 │   │   ├── user.py
-│   │   ├── product.py
-│   │   ├── category.py
-│   │   ├── order.py
-│   │   ├── cart.py
-│   │   └── payment.py
 │   ├── crud/
 │   │   ├── __init__.py
 │   │   ├── base.py
 │   │   ├── user.py
-│   │   ├── product.py
-│   │   ├── category.py
-│   │   ├── order.py
-│   │   ├── cart.py
-│   │   └── payment.py
 │   └── services/
 │       ├── __init__.py
 │       ├── stripe_service.py
