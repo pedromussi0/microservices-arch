@@ -17,7 +17,7 @@ load_dotenv()
 
 settings = get_settings()
 
-database_url = settings.TEST_DATABASE_URL.replace('+asyncpg', '')
+database_url = settings.DATABASE_URL.replace('+asyncpg', '')
 print(f"Using Database URL: {database_url}")  # Debugging
 config.set_main_option('sqlalchemy.url', database_url)
 
@@ -61,7 +61,7 @@ def run_migrations_offline() -> None:
     with context.begin_transaction():
         context.run_migrations()
 
-print(f"Database URL: {settings.TEST_DATABASE_URL}")
+print(f"Database URL: {settings.DATABASE_URL}")
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode.

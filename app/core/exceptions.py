@@ -11,3 +11,7 @@ class DuplicateEntityException(BaseAPIException):
 class RegistrationException(BaseAPIException):
     """Raised when there's an error during user registration"""
     pass
+
+class AuthenticationException(BaseAPIException):
+    """Raised when authentication fails"""
+    pass

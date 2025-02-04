@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordBearer
 from app.core.config import settings
 from app.api.v1.routes import v1_router
 
@@ -13,10 +14,12 @@ app = FastAPI(
     openapi_url="/api/openapi.json"
 )
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
 # CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
+    allow_origins=["http://localhost","192.168.0.141"],  # Allows all origins
     allow_credentials=True,
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers

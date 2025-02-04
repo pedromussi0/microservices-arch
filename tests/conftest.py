@@ -16,7 +16,7 @@ load_dotenv()
 
 # Test database
 test_engine = create_async_engine(
-    settings.TEST_DATABASE_URL, 
+    settings.DATABASE_URL, 
     echo=True
 )
 TestingSessionLocal = sessionmaker(
