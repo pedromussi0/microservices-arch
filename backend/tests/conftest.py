@@ -1,52 +1,45 @@
-import os
-from dotenv import load_dotenv
+import asyncio
+from typing import AsyncGenerator
 import pytest
-from httpx import AsyncClient
-import pytest_asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
-from typing import AsyncGenerator
-
-from app.main import app
+from alembic import command
+from alembic.config import Config
+from httpx import ASGITransport, AsyncClient
 from app.core.config import settings
-from app.models.base import Base
-from app.core.database import get_db
+from app.main import app
 
-load_dotenv()
-
-# Test database
-test_engine = create_async_engine(
-    settings.DATABASE_URL, 
-    echo=True
+async_engine = create_async_engine(
+    settings.TEST_DATABASE_URL, 
+    echo=settings.DEBUG,
+    future=True
 )
-TestingSessionLocal = sessionmaker(
-    test_engine, 
+
+AsyncSessionLocal = sessionmaker(
+    async_engine, 
     class_=AsyncSession, 
     expire_on_commit=False
 )
 
-@pytest.fixture
-async def db_session() -> AsyncGenerator[AsyncSession, None]:
-    async with test_engine.begin() as connection:
-        await connection.run_sync(Base.metadata.create_all)
-        
-        async with TestingSessionLocal(bind=connection) as session:
-            yield session
-            await session.rollback()
-        
-        await connection.run_sync(Base.metadata.drop_all)
+@pytest.fixture(scope="session")
+def event_loop():
+    loop = asyncio.get_event_loop()
+    yield loop
+    loop.close()
 
-@pytest_asyncio.fixture
-async def client() -> AsyncGenerator[AsyncClient, None]:
-    # Override the get_db dependency to use test database
-    async def override_get_db():
-        async with TestingSessionLocal() as session:
-            yield session
+@pytest.fixture(scope="session", autouse=True)
+def apply_migrations():
+    alembic_cfg = Config("alembic.ini")
+    command.upgrade(alembic_cfg, "head")
+    yield
+    command.downgrade(alembic_cfg, "base")
 
-    app.dependency_overrides[get_db] = override_get_db
-    
-    async with AsyncClient(base_url=os.getenv("BASE_URL")) as client:
+@pytest.fixture(scope="session")
+async def db_session(event_loop) -> AsyncGenerator[AsyncSession, None]:
+    async with AsyncSessionLocal() as session:
+        yield session
+
+@pytest.fixture(scope="session")
+async def client(event_loop, db_session: AsyncSession):
+    async with AsyncClient(transport=ASGITransport(app=app),base_url="http://testserver") as client:
         yield client
-    
-    # Clear the override
-    app.dependency_overrides.clear()
