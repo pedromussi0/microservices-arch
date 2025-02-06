@@ -1,13 +1,11 @@
+import os
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from dotenv import load_dotenv
+from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-
 from app.core.config import get_settings
-from dotenv import load_dotenv
-import os
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -17,9 +15,9 @@ load_dotenv()
 
 settings = get_settings()
 
-database_url = settings.DATABASE_URL.replace('+asyncpg', '')
+database_url = settings.DATABASE_URL.replace("+asyncpg", "")
 print(f"Using Database URL: {database_url}")  # Debugging
-config.set_main_option('sqlalchemy.url', database_url)
+config.set_main_option("sqlalchemy.url", database_url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -28,7 +26,8 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from app.models import Base 
+from app.models import Base
+
 target_metadata = Base.metadata
 
 
@@ -61,7 +60,9 @@ def run_migrations_offline() -> None:
     with context.begin_transaction():
         context.run_migrations()
 
+
 print(f"Database URL: {settings.DATABASE_URL}")
+
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode.
@@ -77,9 +78,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

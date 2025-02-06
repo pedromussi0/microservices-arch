@@ -1,6 +1,9 @@
 from ctypes.wintypes import BYTE
-from sqlalchemy import BLOB, Column, LargeBinary, String, Boolean
+
+from sqlalchemy import BLOB, Boolean, Column, LargeBinary, String
+
 from app.models.base import TimeStampedBase
+
 
 class User(TimeStampedBase):
     __tablename__ = "users"

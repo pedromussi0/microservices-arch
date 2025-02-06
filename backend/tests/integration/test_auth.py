@@ -1,6 +1,8 @@
+import random
+
 import pytest
 from httpx import AsyncClient
-import random
+
 
 @pytest.mark.asyncio
 async def test_user_registration(client: AsyncClient):
@@ -10,8 +12,8 @@ async def test_user_registration(client: AsyncClient):
         json={
             "email": random_email,
             "password": "strongpassword123",
-            "full_name": "Test User3"
-        }
+            "full_name": "Test User3",
+        },
     )
     assert response.status_code == 201
     data = response.json()
@@ -19,6 +21,7 @@ async def test_user_registration(client: AsyncClient):
     assert "id" in data
     assert "created_at" in data
     assert "updated_at" in data
+
 
 @pytest.mark.asyncio
 async def test_duplicate_email_registration(client: AsyncClient):
@@ -29,18 +32,18 @@ async def test_duplicate_email_registration(client: AsyncClient):
         json={
             "email": duplicate_email,
             "password": "strongpassword123",
-            "full_name": "1stemailuser"
-        }
+            "full_name": "1stemailuser",
+        },
     )
-    
+
     # Second registration with same email
     response = await client.post(
         "/api/v1/auth/register",
         json={
             "email": duplicate_email,
             "password": "anotherpassword456",
-            "full_name": "2ndemailuser"
-        }
+            "full_name": "2ndemailuser",
+        },
     )
     assert response.status_code == 400
     assert "A user with this email is already registered" in response.json()["detail"]

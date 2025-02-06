@@ -1,2 +1,2 @@
 from .base import Base, TimeStampedBase
-from .user import User  
+from .user import User

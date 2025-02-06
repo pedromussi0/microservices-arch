@@ -1651,3 +1651,10 @@ WHERE users.email = $1::VARCHAR
 2025-02-05 15:59:38 | INFO     | logging:callHandlers:1762 | Waiting for application shutdown.
 2025-02-05 15:59:38 | INFO     | logging:callHandlers:1762 | Application shutdown complete.
 2025-02-05 15:59:38 | INFO     | logging:callHandlers:1762 | Finished server process [25304]
+2025-02-06 10:16:25 | INFO     | logging:callHandlers:1762 | Started server process [25448]
+2025-02-06 10:16:25 | INFO     | logging:callHandlers:1762 | Waiting for application startup.
+2025-02-06 10:16:25 | INFO     | logging:callHandlers:1762 | Application startup complete.
+2025-02-06 10:16:52 | INFO     | logging:callHandlers:1762 | Shutting down
+2025-02-06 10:16:53 | INFO     | logging:callHandlers:1762 | Waiting for application shutdown.
+2025-02-06 10:16:53 | INFO     | logging:callHandlers:1762 | Application shutdown complete.
+2025-02-06 10:16:53 | INFO     | logging:callHandlers:1762 | Finished server process [25448]
