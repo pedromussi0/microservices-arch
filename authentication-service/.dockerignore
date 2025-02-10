@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.git/
+.gitignore
+alembic/versions/
+node_modules/
+tests/
+__pycache__/test_*.pyc

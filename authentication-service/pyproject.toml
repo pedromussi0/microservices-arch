@@ -1,0 +1,37 @@
+[tool.poetry]
+name = "ecommerce-api"
+version = "0.1.0"
+description = "E-commerce API built with FastAPI"
+authors = ["Pedro Mussi <phpmussi@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.109.0"
+sqlalchemy = "^2.0.25"
+alembic = "^1.13.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+httpx = "^0.26.0"
+# ... 
+
+[tool.poetry.scripts]
+migrate = "alembic upgrade head"
+rollback = "alembic downgrade -1"
+create-migration = "alembic revision --autogenerate"
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
