@@ -1,71 +1,89 @@
-ecommerce_api/
-├── alembic/
-│   └── versions/
-├── app/
-│   ├── __init__.py
-│   ├── main.py
-│   ├── core/
-│   │   ├── __init__.py
-│   │   ├── config.py
-│   │   ├── security.py
-│   │   ├── exceptions.py
-│   │   └── logger.py
-│   ├── api/
-│   │   ├── __init__.py
-│   │   ├── deps.py
-│   │   ├── v1/
-│   │   │   ├── __init__.py
-│   │   │   ├── routes.py
-│   │   │   └── endpoints/
-│   │   │       ├── __init__.py
-│   │   │       ├── auth.py
-│   │   │       ├── users.py
-│   ├── models/
-│   │   ├── __init__.py
-│   │   ├── base.py
-│   │   ├── user.py
-│   ├── schemas/
-│   │   ├── __init__.py
-│   │   ├── base.py
-│   │   ├── user.py
-│   ├── crud/
-│   │   ├── __init__.py
-│   │   ├── base.py
-│   │   ├── user.py
-│   └── services/
-│       ├── __init__.py
-│       ├── stripe_service.py
-│       ├── email_service.py
-│       ├── inventory_service.py
-│       └── search_service.py
-├── tests/
-│   ├── __init__.py
-│   ├── conftest.py
-│   ├── factories/
-│   │   ├── __init__.py
-│   │   ├── user.py
-│   │   ├── product.py
-│   │   └── order.py
-│   ├── integration/
-│   │   ├── __init__.py
-│   │   ├── test_auth.py
-│   │   ├── test_products.py
-│   │   └── test_orders.py
-│   └── unit/
-│       ├── __init__.py
-│       ├── test_services/
-│       └── test_crud/
-├── build/
-│   ├── Dockerfile
-│   └── docker-compose.yml
-├── scripts/
-│   ├── test.sh
-│   └── lint.sh
-├── .env.example
-├── .gitignore
-├── pyproject.toml
-├── README.md
-└── requirements/
-    ├── base.txt
-    ├── dev.txt
-    └── prod.txt
+Authentication Service
+======================
+
+Overview
+--------
+
+This FastAPI authentication service provides a robust, SOLID-principle-based approach to user authentication with microservices architecture support.
+
+Architecture Components
+-----------------------
+
+### Interfaces
+
+-   `IUserService`: User management contract
+-   `ITokenService`: Token generation and validation contract
+-   `IAuthService`: Authentication workflow contract
+
+### Services
+
+-   `UserService`: Handles user registration, retrieval, and password verification
+-   `TokenService`: Manages JWT token creation and validation
+-   `AuthService`: Coordinates authentication processes
+
+Key Features
+------------
+
+-   Async database operations
+-   JWT token management
+-   Password hashing with bcrypt
+-   Comprehensive error handling
+-   Structured logging
+-   Dependency injection
+-   Microservices-ready design
+
+Setup Requirements
+------------------
+
+-   Python 3.8+
+-   FastAPI
+-   SQLAlchemy (async)
+-   PyJWT
+-   bcrypt
+
+Configuration
+-------------
+
+Update `core/config.py` with:
+
+-   `JWT_SECRET_KEY`
+-   `ACCESS_TOKEN_EXPIRE_MINUTES`
+-   Authentication algorithm
+
+Endpoints
+---------
+
+-   `/register`: User registration
+-   `/token`: User login, token generation
+-   `/refresh-token`: Token refresh
+-   `/validate-token`: Token validation
+-   `/health`: Service health check
+
+Security Practices
+------------------
+
+-   Hashed password storage
+-   Token-based authentication
+-   Active user validation
+-   Error logging
+-   Rate limiting (recommended)
+
+Extensibility
+-------------
+
+-   Easily add new authentication methods
+-   Swap service implementations
+-   Add custom middleware
+
+Testing
+-------
+
+-   Supports mock implementations
+-   Dependency injection facilitates unit testing
+
+Potential Improvements
+----------------------
+
+-   Implement refresh token rotation
+-   Add multi-factor authentication
+-   Integrate with external identity providers
