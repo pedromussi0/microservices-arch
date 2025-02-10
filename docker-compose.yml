@@ -1,21 +1,45 @@
 services:
   db:
     image: postgres:16.3
-    container_name: postgres-ecom-db
+    container_name: postgres-auth-db
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     networks:
-      - backend 
+      - auth-network
     volumes:
       - db-data:/var/lib/postgresql/data
+    env_file:
+      - .env
     ports:
-      - "5434:5432"
+      - "5432:5432"
 
+  authentication-service:
+    build:
+      context: ./authentication-service
+      dockerfile: authentication-service.dockerfile  
+    container_name: auth-microservice
+    depends_on:
+      - db
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - SECRET_KEY=${SECRET_KEY}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
+      - ALGORITHM=${ALGORITHM}
+      - DEBUG=${DEBUG}
+    networks:
+      - auth-network
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./authentication-service:/app
 volumes:
   db-data:
 
 networks:
-  backend:
+  auth-network:
     driver: bridge
