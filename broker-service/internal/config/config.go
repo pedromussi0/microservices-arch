@@ -1,5 +1,9 @@
 package config
 
+import (
+	"os"
+)
+
 type Config struct {
 	ServerPort     string
 	AuthServiceURL string
@@ -7,11 +11,9 @@ type Config struct {
 }
 
 func Load() (*Config, error) {
-	// In a real application, you might load this from environment variables
-	// or a configuration file
 	return &Config{
-		ServerPort:     "8080",
-		AuthServiceURL: "http://authentication-service:8000",
+		ServerPort:     os.Getenv("BROKER_PORT"),
+		AuthServiceURL: os.Getenv("AUTH_SERVICE_URL"),
 		LoggingEnabled: true,
 	}, nil
 }

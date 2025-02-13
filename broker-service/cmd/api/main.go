@@ -42,7 +42,7 @@ func main() {
 	router.Get("/health", h.HealthCheck)
 
 	// Start server
-	port := os.Getenv("PORT")
+	port := os.Getenv("BROKER_PORT")
 	if port == "" {
 		port = cfg.ServerPort
 	}

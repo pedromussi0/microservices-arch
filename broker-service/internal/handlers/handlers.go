@@ -71,15 +71,20 @@ func (h *Handlers) errorJSON(w http.ResponseWriter, err error, status ...int) er
 }
 
 func (h *Handlers) authenticate(w http.ResponseWriter, auth models.AuthPayload) {
-	err := h.brokerService.HandleAuthRequest(auth)
+	authResponse, err := h.brokerService.HandleAuthRequest(auth)
 	if err != nil {
-		h.errorJSON(w, err)
+		h.errorJSON(w, err, http.StatusUnauthorized)
 		return
 	}
 
 	response := Response{
 		Error:   false,
 		Message: "Authenticated successfully",
+		Data: map[string]interface{}{
+			"access_token":  authResponse.AccessToken,
+			"refresh_token": authResponse.RefreshToken,
+			"token_type":    authResponse.TokenType,
+		},
 	}
 
 	h.writeJSON(w, http.StatusOK, response)
