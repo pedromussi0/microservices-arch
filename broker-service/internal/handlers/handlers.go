@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/pedromussi0/broker-service/internal/models"
@@ -26,8 +27,9 @@ type Response struct {
 
 func (h *Handlers) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	var requestPayload struct {
-		Action string             `json:"action"`
-		Auth   models.AuthPayload `json:"auth,omitempty"`
+		Action       string             `json:"action"`
+		Auth         models.AuthPayload `json:"auth,omitempty"`
+		RefreshToken string             `json:"refresh_token,omitempty"`
 	}
 
 	err := json.NewDecoder(r.Body).Decode(&requestPayload)
@@ -39,8 +41,10 @@ func (h *Handlers) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	switch requestPayload.Action {
 	case "auth":
 		h.authenticate(w, requestPayload.Auth)
+	case "refresh":
+		h.refreshToken(w, requestPayload.RefreshToken)
 	default:
-		h.errorJSON(w, err, http.StatusBadRequest)
+		h.errorJSON(w, fmt.Errorf("unknown action: %s", requestPayload.Action), http.StatusBadRequest)
 	}
 }
 
@@ -80,6 +84,31 @@ func (h *Handlers) authenticate(w http.ResponseWriter, auth models.AuthPayload) 
 	response := Response{
 		Error:   false,
 		Message: "Authenticated successfully",
+		Data: map[string]interface{}{
+			"access_token":  authResponse.AccessToken,
+			"refresh_token": authResponse.RefreshToken,
+			"token_type":    authResponse.TokenType,
+		},
+	}
+
+	h.writeJSON(w, http.StatusOK, response)
+}
+
+func (h *Handlers) refreshToken(w http.ResponseWriter, refreshToken string) {
+	if refreshToken == "" {
+		h.errorJSON(w, fmt.Errorf("refresh token is required"), http.StatusBadRequest)
+		return
+	}
+
+	authResponse, err := h.brokerService.HandleRefreshToken(refreshToken)
+	if err != nil {
+		h.errorJSON(w, err, http.StatusUnauthorized)
+		return
+	}
+
+	response := Response{
+		Error:   false,
+		Message: "Tokens refreshed successfully",
 		Data: map[string]interface{}{
 			"access_token":  authResponse.AccessToken,
 			"refresh_token": authResponse.RefreshToken,

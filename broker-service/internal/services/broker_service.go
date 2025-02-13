@@ -17,11 +17,13 @@ type BrokerService struct {
 }
 
 type AuthResponse struct {
-	AccessToken  string `json:"access_token,omitempty"`
-	RefreshToken string `json:"refresh_token,omitempty"`
-	TokenType    string `json:"token_type,omitempty"`
-	Valid        bool   `json:"valid,omitempty"`
-	Error        string `json:"detail,omitempty"`
+	models.TokenPayload
+	Valid bool   `json:"valid,omitempty"`
+	Error string `json:"detail,omitempty"`
+}
+
+type RefreshTokenRequest struct {
+	RefreshToken string `json:"refresh_token"`
 }
 
 func NewBrokerService() *BrokerService {
@@ -70,6 +72,53 @@ func (s *BrokerService) HandleAuthRequest(auth models.AuthPayload) (*AuthRespons
 			return &authResponse, fmt.Errorf("authentication failed: %s", authResponse.Error)
 		}
 		return &authResponse, fmt.Errorf("authentication failed with status code: %d", response.StatusCode)
+	}
+
+	return &authResponse, nil
+}
+
+func (s *BrokerService) HandleRefreshToken(refreshToken string) (*AuthResponse, error) {
+	tokenRequest := RefreshTokenRequest{
+		RefreshToken: refreshToken,
+	}
+
+	jsonData, err := json.Marshal(tokenRequest)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling refresh token request: %w", err)
+	}
+
+	request, err := http.NewRequest(
+		"POST",
+		s.config.AuthServiceURL+"/refresh-token",
+		bytes.NewBuffer(jsonData),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error creating refresh token request: %w", err)
+	}
+
+	request.Header.Set("Content-Type", "application/json")
+
+	response, err := s.client.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("error making refresh token request: %w", err)
+	}
+	defer response.Body.Close()
+
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading refresh token response: %w", err)
+	}
+
+	var authResponse AuthResponse
+	if err := json.Unmarshal(body, &authResponse); err != nil {
+		return nil, fmt.Errorf("error unmarshaling refresh token response: %w", err)
+	}
+
+	if response.StatusCode != http.StatusOK {
+		if authResponse.Error != "" {
+			return &authResponse, fmt.Errorf("token refresh failed: %s", authResponse.Error)
+		}
+		return &authResponse, fmt.Errorf("token refresh failed with status code: %d", response.StatusCode)
 	}
 
 	return &authResponse, nil
