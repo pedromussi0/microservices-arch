@@ -22,4 +22,4 @@ ENV ALEMBIC_CONFIG=/app/alembic.ini
 EXPOSE 8000
 
 # Start the app after waiting for the database
-CMD ["sh", "-c", "/wait-for-it.sh db:5432 -- alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+CMD ["sh", "-c", "/wait-for-it.sh -t 3 db:5432 -- alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]

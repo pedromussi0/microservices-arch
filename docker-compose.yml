@@ -37,6 +37,23 @@ services:
       - "8000:8000"
     volumes:
       - ./authentication-service:/app
+    restart: always
+
+  broker-service:
+    build:
+      context: ./broker-service
+      dockerfile: broker-service.dockerfile
+    container_name: broker-microservice
+    ports:
+      - "8080:8080"
+    networks:
+      - auth-network
+    depends_on:
+      - authentication-service
+    volumes:
+      - ./broker-service:/app
+    restart: always
+
 volumes:
   db-data:
 
