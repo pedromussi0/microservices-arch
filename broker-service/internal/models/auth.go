@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/pedromussi0/broker-service/internal/pkg/types"
+	"github.com/pedromussi0/broker-service/internal/domain/types"
 )
 
 type AuthPayload struct {
