@@ -2,11 +2,11 @@ package services
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/pedromussi0/broker-service/internal/config"
 	"github.com/pedromussi0/broker-service/internal/models"
 )
@@ -22,6 +22,12 @@ type AuthResponse struct {
 	Error string `json:"detail,omitempty"`
 }
 
+type UserResponse struct {
+	models.UserPayload
+	Valid bool        `json:"valid,omitempty"`
+	Error interface{} `json:"detail,omitempty"`
+}
+
 type RefreshTokenRequest struct {
 	RefreshToken string `json:"refresh_token"`
 }
@@ -35,7 +41,7 @@ func NewBrokerService() *BrokerService {
 }
 
 func (s *BrokerService) HandleAuthRequest(auth models.AuthPayload) (*AuthResponse, error) {
-	jsonData, err := json.Marshal(auth)
+	jsonData, err := jsoniter.Marshal(auth)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling auth payload: %w", err)
 	}
@@ -63,7 +69,7 @@ func (s *BrokerService) HandleAuthRequest(auth models.AuthPayload) (*AuthRespons
 	}
 
 	var authResponse AuthResponse
-	if err := json.Unmarshal(body, &authResponse); err != nil {
+	if err := jsoniter.Unmarshal(body, &authResponse); err != nil {
 		return nil, fmt.Errorf("error unmarshaling response: %w", err)
 	}
 
@@ -82,7 +88,7 @@ func (s *BrokerService) HandleRefreshToken(refreshToken string) (*AuthResponse, 
 		RefreshToken: refreshToken,
 	}
 
-	jsonData, err := json.Marshal(tokenRequest)
+	jsonData, err := jsoniter.Marshal(tokenRequest)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling refresh token request: %w", err)
 	}
@@ -110,7 +116,7 @@ func (s *BrokerService) HandleRefreshToken(refreshToken string) (*AuthResponse, 
 	}
 
 	var authResponse AuthResponse
-	if err := json.Unmarshal(body, &authResponse); err != nil {
+	if err := jsoniter.Unmarshal(body, &authResponse); err != nil {
 		return nil, fmt.Errorf("error unmarshaling refresh token response: %w", err)
 	}
 
@@ -122,4 +128,47 @@ func (s *BrokerService) HandleRefreshToken(refreshToken string) (*AuthResponse, 
 	}
 
 	return &authResponse, nil
+}
+
+func (s *BrokerService) HandleRegisterRequest(user models.UserPayload) (*UserResponse, error) {
+	jsonData, err := jsoniter.Marshal(user)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling user payload: %w", err)
+	}
+
+	request, err := http.NewRequest(
+		"POST",
+		s.config.AuthServiceURL+"/register",
+		bytes.NewBuffer(jsonData),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error creating request: %w", err)
+	}
+
+	request.Header.Set("Content-Type", "application/json")
+
+	response, err := s.client.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("error making request to auth service: %w", err)
+	}
+	defer response.Body.Close()
+
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading response body: %w", err)
+	}
+
+	var userResponse UserResponse
+	if err := jsoniter.Unmarshal(body, &userResponse); err != nil {
+		return nil, fmt.Errorf("error unmarshaling response: %w", err)
+	}
+
+	if response.StatusCode != http.StatusCreated {
+		if userResponse.Error != "" {
+			return &userResponse, fmt.Errorf("registration failed: %s", userResponse.Error)
+		}
+		return &userResponse, fmt.Errorf("registration failed with status code: %d", response.StatusCode)
+	}
+
+	return &userResponse, nil
 }

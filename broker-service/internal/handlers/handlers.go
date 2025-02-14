@@ -1,10 +1,11 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/pedromussi0/broker-service/internal/models"
 	"github.com/pedromussi0/broker-service/internal/services"
 )
@@ -29,10 +30,11 @@ func (h *Handlers) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	var requestPayload struct {
 		Action       string             `json:"action"`
 		Auth         models.AuthPayload `json:"auth,omitempty"`
+		Register     models.UserPayload `json:"register,omitempty"`
 		RefreshToken string             `json:"refresh_token,omitempty"`
 	}
 
-	err := json.NewDecoder(r.Body).Decode(&requestPayload)
+	err := jsoniter.NewDecoder(r.Body).Decode(&requestPayload)
 	if err != nil {
 		h.errorJSON(w, err)
 		return
@@ -43,6 +45,8 @@ func (h *Handlers) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 		h.authenticate(w, requestPayload.Auth)
 	case "refresh":
 		h.refreshToken(w, requestPayload.RefreshToken)
+	case "register":
+		h.registerUser(w, requestPayload.Register)
 	default:
 		h.errorJSON(w, fmt.Errorf("unknown action: %s", requestPayload.Action), http.StatusBadRequest)
 	}
@@ -59,7 +63,7 @@ func (h *Handlers) HealthCheck(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) writeJSON(w http.ResponseWriter, status int, data any) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	return json.NewEncoder(w).Encode(data)
+	return jsoniter.NewEncoder(w).Encode(data)
 }
 
 func (h *Handlers) errorJSON(w http.ResponseWriter, err error, status ...int) error {
@@ -117,4 +121,28 @@ func (h *Handlers) refreshToken(w http.ResponseWriter, refreshToken string) {
 	}
 
 	h.writeJSON(w, http.StatusOK, response)
+}
+
+func (h *Handlers) registerUser(w http.ResponseWriter, user models.UserPayload) {
+	userResponse, err := h.brokerService.HandleRegisterRequest(user)
+	if err != nil {
+		h.errorJSON(w, err, http.StatusBadRequest)
+		return
+	}
+
+	response := Response{
+		Error:   false,
+		Message: "User registered successfully",
+		Data: map[string]interface{}{
+			"email":        userResponse.Email,
+			"full_name":    userResponse.FullName,
+			"is_active":    userResponse.IsActive,
+			"is_superuser": userResponse.IsSuperUser,
+			"id":           userResponse.Id,
+			"created_at":   userResponse.CreatedAt.Time().Format(time.RFC3339Nano),
+			"updated_at":   userResponse.UpdatedAt.Time().Format(time.RFC3339Nano),
+		},
+	}
+
+	h.writeJSON(w, http.StatusCreated, response)
 }
